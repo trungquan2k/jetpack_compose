@@ -1,8 +1,8 @@
 package com.example.jetrandomfood.appdrawer
 
 
-
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -15,9 +15,11 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -27,14 +29,15 @@ import androidx.compose.ui.res.stringResource
 
 import androidx.compose.ui.unit.dp
 
-import com.example.jetrandomfood.ui.component.ListFoodsItem
+import com.example.jetrandomfood.ui.screen.ListFoodsItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import com.example.jetrandomfood.R
+import com.example.jetrandomfood.components.ListRanDomFoods
 import com.example.jetrandomfood.routing.JetFoodRouter
 import com.example.jetrandomfood.routing.Screen
 
-import com.example.jetrandomfood.ui.component.ListRanDomFoods
+
 import com.example.jetrandomfood.viewmodel.MainViewModel
 
 
@@ -53,28 +56,29 @@ fun HomePageScreen(viewModel: MainViewModel) {
     val fabShape = RoundedCornerShape(40)
 
     // check button random pressed yet
-    val checkClick =  remember { mutableStateOf(false) }
+    val checkClick = remember { mutableStateOf(false) }
     Scaffold(
         scaffoldState = scaffoldState,
         topBar = {
             TopAppBar(scaffoldState = scaffoldState, scope = scope)
         },
         content = {
-            // check if the random button has been pressed. If clicked, then set state to false otherwise true and display the list after random
-            if(!checkClick.value){
+            // check if the random button has been pressed. If clicked,
+            // then set state to false otherwise true and display the list after random
+            if (!checkClick.value) {
                 ListFoodsItem()
-            }else{
+            } else {
                 ListRanDomFoods()
             }
         },
         isFloatingActionButtonDocked = true,
         floatingActionButtonPosition = FabPosition.Center,
         floatingActionButton = {
-            if(!checkClick.value){
+            if (!checkClick.value) {
                 ExtendedFloatingActionButton(
                     icon = {
                         Icon(
-                            Icons.Filled.Add,
+                            Icons.Filled.Refresh,
                             contentDescription = "get random",
                         )
                     },
@@ -83,13 +87,13 @@ fun HomePageScreen(viewModel: MainViewModel) {
                     },
                     onClick = {
                         viewModel.onClickRanDomFood()
-                        checkClick.value=true
+                        checkClick.value = true
                     },
                     shape = fabShape,
                     elevation = FloatingActionButtonDefaults.elevation(8.dp),
                     backgroundColor = colors
                 )
-            } else{
+            } else {
                 ExtendedFloatingActionButton(
                     icon = {
                         Icon(
@@ -102,7 +106,7 @@ fun HomePageScreen(viewModel: MainViewModel) {
                     },
                     onClick = {
                         viewModel.onClickBackHome()
-                        checkClick.value=false
+                        checkClick.value = false
                     },
                     shape = fabShape,
                     elevation = FloatingActionButtonDefaults.elevation(8.dp),
@@ -122,12 +126,11 @@ fun HomePageScreen(viewModel: MainViewModel) {
             )
         },
         bottomBar = {
-            BottomAppBar(cutoutShape = fabShape,backgroundColor = Color(0xFDCD7F32)) {}
+            BottomAppBar(cutoutShape = fabShape, backgroundColor = Color(0xFDCD7F32)) {}
 
         },
     )
 }
-
 
 
 @Composable
@@ -135,7 +138,18 @@ fun TopAppBar(scaffoldState: ScaffoldState, scope: CoroutineScope) {
     val drawerState = scaffoldState.drawerState
     val result = remember { mutableStateOf("") }
     val expanded = remember { mutableStateOf(false) }
-    val liked = remember { mutableStateOf(true) }
+
+
+    // animation fan
+    val infiniteTransition = rememberInfiniteTransition()
+    val fanSize by infiniteTransition.animateFloat(
+        initialValue = 40.0f,
+        targetValue = 30.0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(800, delayMillis = 100, easing = FastOutLinearInEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
     TopAppBar(
         navigationIcon = {
             IconButton(
@@ -156,28 +170,12 @@ fun TopAppBar(scaffoldState: ScaffoldState, scope: CoroutineScope) {
         },
         title = { Text(text = stringResource(R.string.app_name), color = Color.Black) },
         actions = {
-            IconToggleButton(
-                checked = liked.value,
-                onCheckedChange = {
-                    liked.value = it
-                    if (liked.value) {
-                        result.value = "Liked"
-                    } else {
-                        result.value = "Unliked"
-                    }
-                }
-            ) {
-                val tint by animateColorAsState(
-                    if (liked.value) Color.Red
-                    else Color.LightGray
-                )
-                Icon(
-                    Icons.Filled.Favorite,
-                    contentDescription = "Localized description",
-                    tint = tint
-                )
-            }
-
+            Image(
+                painter = painterResource(R.drawable.fan),
+                contentDescription = "Fan",
+                modifier = Modifier
+                    .size(fanSize.dp)
+            )
             Box(
                 Modifier
                     .wrapContentSize(Alignment.TopEnd)
@@ -191,36 +189,37 @@ fun TopAppBar(scaffoldState: ScaffoldState, scope: CoroutineScope) {
                         contentDescription = "Localized description"
                     )
                 }
-
                 DropdownMenu(
                     expanded = expanded.value,
                     onDismissRequest = { expanded.value = false },
                 ) {
                     DropdownMenuItem(onClick = {
                         expanded.value = false
-                        result.value = "First item clicked"
+                        result.value = "First Item"
                     }) {
                         Text("First Item")
                     }
 
                     DropdownMenuItem(onClick = {
                         expanded.value = false
-                        result.value = "Second item clicked"
+                        result.value = "Second Item"
                     }) {
                         Text("Second item")
                     }
-
                     Divider()
-
+                    DropdownMenuItem(onClick = {
+                        expanded.value = false
+                        result.value = "Third Item"
+                    }) {
+                        Text("Third item")
+                    }
                 }
             }
+
         },
         backgroundColor = Color(0x6200EE)
-//        backgroundColor = Color(0xFDCD7F32),
-//        backgroundColor = colorResource(id = R.color.design_default_color_primary)
     )
 }
-
 
 
 @Composable
