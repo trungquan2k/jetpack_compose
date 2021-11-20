@@ -27,25 +27,7 @@ data class FoodDbModel(
                 "Mon an hai",
                 "1200000",
                 image = R.drawable.banhbao
-            ),
-            FoodDbModel(
-                3,
-                "Mon an ba",
-                "1200000",
-                image = R.drawable.banhbao
-            ),
-            FoodDbModel(
-                4,
-                "Mon an bon",
-                "1200000",
-                image = R.drawable.banhbao
-            ),
-            FoodDbModel(
-                5,
-                "Mon an nam",
-                "1200000",
-                image = R.drawable.banhbao
-            ),
+            )
         )
     }
 }

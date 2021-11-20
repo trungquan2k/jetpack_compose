@@ -1,6 +1,7 @@
 package com.example.jetrandomfood.appdrawer
 
 
+
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -23,24 +24,26 @@ import androidx.compose.ui.graphics.vector.ImageVector
 
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 
-import com.example.jetrandomfood.ui.screen.ListFoodsItem
+import androidx.compose.ui.unit.dp
+
+import com.example.jetrandomfood.ui.component.ListFoodsItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import com.example.jetrandomfood.R
 import com.example.jetrandomfood.routing.JetFoodRouter
 import com.example.jetrandomfood.routing.Screen
-import androidx.constraintlayout.compose.ConstraintLayout
+
+import com.example.jetrandomfood.ui.component.ListRanDomFoods
 import com.example.jetrandomfood.viewmodel.MainViewModel
 
 
+@ExperimentalMaterialApi
 @Composable
 fun HomePageScreen(viewModel: MainViewModel) {
     val scope = rememberCoroutineScope()
     val scaffoldState: ScaffoldState = rememberScaffoldState()
+
     //click button
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -49,37 +52,68 @@ fun HomePageScreen(viewModel: MainViewModel) {
     // shape center
     val fabShape = RoundedCornerShape(40)
 
+    // check button random pressed yet
+    val checkClick =  remember { mutableStateOf(false) }
     Scaffold(
         scaffoldState = scaffoldState,
         topBar = {
             TopAppBar(scaffoldState = scaffoldState, scope = scope)
         },
         content = {
-            ListFoodsItem()
+            // check if the random button has been pressed. If clicked, then set state to false otherwise true and display the list after random
+            if(!checkClick.value){
+                ListFoodsItem()
+            }else{
+                ListRanDomFoods()
+            }
         },
         isFloatingActionButtonDocked = true,
         floatingActionButtonPosition = FabPosition.Center,
         floatingActionButton = {
-            ExtendedFloatingActionButton(
-                icon = {
-                    Icon(
-                        Icons.Filled.Add,
-                        contentDescription = "get random",
-                    )
-                },
-                text = {
-                    Text("Random", color = Color.White)
-                },
-                onClick = {
-                    viewModel.onClickRanDomFood()
-                },
-                shape = fabShape,
-                elevation = FloatingActionButtonDefaults.elevation(8.dp),
-                backgroundColor = colors
-            )
+            if(!checkClick.value){
+                ExtendedFloatingActionButton(
+                    icon = {
+                        Icon(
+                            Icons.Filled.Add,
+                            contentDescription = "get random",
+                        )
+                    },
+                    text = {
+                        Text("Random", color = Color.White)
+                    },
+                    onClick = {
+                        viewModel.onClickRanDomFood()
+                        checkClick.value=true
+                    },
+                    shape = fabShape,
+                    elevation = FloatingActionButtonDefaults.elevation(8.dp),
+                    backgroundColor = colors
+                )
+            } else{
+                ExtendedFloatingActionButton(
+                    icon = {
+                        Icon(
+                            Icons.Filled.ArrowBack,
+                            contentDescription = "back home page",
+                        )
+                    },
+                    text = {
+                        Text("Back Home", color = Color.White)
+                    },
+                    onClick = {
+                        viewModel.onClickBackHome()
+                        checkClick.value=false
+                    },
+                    shape = fabShape,
+                    elevation = FloatingActionButtonDefaults.elevation(8.dp),
+                    backgroundColor = colors
+                )
+            }
+
         },
         drawerContent = {
-            AppDrawer(currentScreen = Screen.Home,
+            AppDrawer(
+                currentScreen = Screen.Home,
                 closeDrawerAction = {
                     scope.launch {
                         scaffoldState.drawerState.close()
@@ -87,13 +121,13 @@ fun HomePageScreen(viewModel: MainViewModel) {
                 }
             )
         },
-
         bottomBar = {
             BottomAppBar(cutoutShape = fabShape,backgroundColor = Color(0xFDCD7F32)) {}
 
         },
     )
 }
+
 
 
 @Composable
@@ -107,9 +141,9 @@ fun TopAppBar(scaffoldState: ScaffoldState, scope: CoroutineScope) {
             IconButton(
                 content = {
                     Icon(
-                        Icons.Default.Menu,
-                        tint = Color.White,
-                        contentDescription = stringResource(R.string.app_name)
+                        Icons.Default.AccountCircle,
+                        tint = Color.Black,
+                        contentDescription = stringResource(R.string.app_name),
                     )
                 },
                 onClick = {
@@ -120,14 +154,8 @@ fun TopAppBar(scaffoldState: ScaffoldState, scope: CoroutineScope) {
                 }
             )
         },
-        title = { Text(text = stringResource(R.string.app_name), color = Color.White) },
+        title = { Text(text = stringResource(R.string.app_name), color = Color.Black) },
         actions = {
-            IconButton(onClick = {
-                result.value = " Play icon clicked"
-            }) {
-                Icon(Icons.Filled.CheckCircle, contentDescription = "")
-            }
-
             IconToggleButton(
                 checked = liked.value,
                 onCheckedChange = {
@@ -140,7 +168,7 @@ fun TopAppBar(scaffoldState: ScaffoldState, scope: CoroutineScope) {
                 }
             ) {
                 val tint by animateColorAsState(
-                    if (liked.value) Color(0xFF7BB661)
+                    if (liked.value) Color.Red
                     else Color.LightGray
                 )
                 Icon(
@@ -184,27 +212,36 @@ fun TopAppBar(scaffoldState: ScaffoldState, scope: CoroutineScope) {
 
                     Divider()
 
-                    DropdownMenuItem(onClick = {
-                        expanded.value = false
-                        result.value = "Third item clicked"
-                    }) {
-                        Text("Third item")
-                    }
-
-                    Divider()
-
-                    DropdownMenuItem(onClick = {
-                        expanded.value = false
-                        result.value = "Fourth item clicked"
-                    }) {
-                        Text("Fourth item")
-                    }
                 }
             }
         },
-        backgroundColor = Color(0xFDCD7F32),
+        backgroundColor = Color(0x6200EE)
+//        backgroundColor = Color(0xFDCD7F32),
 //        backgroundColor = colorResource(id = R.color.design_default_color_primary)
     )
+}
+
+
+
+@Composable
+fun AppDrawerHeader() {
+    Row(modifier = Modifier.fillMaxWidth()) {
+        Image(
+            painter = painterResource(id = R.drawable.miquang),
+            contentDescription = "Drawer Food",
+            colorFilter = ColorFilter.tint(MaterialTheme.colors.onSurface),
+            modifier = Modifier
+                .padding(16.dp)
+                .size(32.dp)
+                .clip(RoundedCornerShape(10))
+                .border(1.dp, Color.Gray, RoundedCornerShape(10))
+        )
+        Text(
+            text = "Random Foods App",
+            modifier = Modifier.align(Alignment.CenterVertically)
+
+        )
+    }
 }
 
 @Composable
@@ -264,28 +301,6 @@ private fun ScreenNavigationButton(
     }
 }
 
-
-@Composable
-fun AppDrawerHeader() {
-    Row(modifier = Modifier.fillMaxWidth()) {
-        Image(
-            painter = painterResource(id = R.drawable.miquang),
-            contentDescription = "Drawer Food",
-            colorFilter = ColorFilter.tint(MaterialTheme.colors.onSurface),
-            modifier = Modifier
-                .padding(16.dp)
-                .size(32.dp)
-                .clip(RoundedCornerShape(10))
-                .border(1.dp, Color.Gray, RoundedCornerShape(10))
-        )
-        Text(
-            text = "Ramdom Foods App",
-            modifier = Modifier.align(Alignment.CenterVertically)
-
-        )
-    }
-}
-
 @Composable
 fun AppDrawer(
     currentScreen: Screen,
@@ -294,7 +309,7 @@ fun AppDrawer(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = Color.LightGray)
+            .background(color = Color(0xFDCD7F32))
     ) {
         AppDrawerHeader()
         Divider(color = MaterialTheme.colors.onSurface.copy(alpha = .2f))
@@ -306,64 +321,6 @@ fun AppDrawer(
                 JetFoodRouter.navigateTo(Screen.Home)
                 closeDrawerAction()
             }
-        )
-        ScreenNavigationButton(
-            icon = Icons.Filled.Notifications,
-            label = "Notification",
-            isSelected = currentScreen === Screen.RanDomFood,
-            onClick = {
-                closeDrawerAction()
-            }
-        )
-        AppDrawerFooter()
-    }
-}
-
-@Composable
-private fun AppDrawerFooter(modifier: Modifier = Modifier) {
-    ConstraintLayout(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(
-                start = 16.dp,
-                bottom = 16.dp,
-                end = 16.dp
-            )
-    ) {
-        val colors = MaterialTheme.colors
-        val (settingsImage, settingsText, darkModeButton) = createRefs()
-        Image(
-            modifier = modifier.constrainAs(settingsImage) {
-                start.linkTo(parent.start)
-                bottom.linkTo(parent.bottom)
-            },
-            imageVector = Icons.Default.Settings,
-            contentDescription = stringResource(id = R.string.settings),
-            colorFilter = ColorFilter.tint(colors.primaryVariant)
-        )
-        Text(
-            fontSize = 10.sp,
-            text = stringResource(R.string.settings),
-            style = MaterialTheme.typography.body2,
-            color = colors.primaryVariant,
-            modifier = modifier
-                .padding(start = 16.dp)
-                .constrainAs(settingsText) {
-                    start.linkTo(settingsImage.end)
-                    centerVerticallyTo(settingsImage)
-                }
-        )
-
-        Image(
-            imageVector = ImageVector.vectorResource(id = R.drawable.ic_moon),
-            contentDescription = stringResource(id = R.string.app_name),
-            modifier = modifier
-                .clickable(onClick = { })
-                .constrainAs(darkModeButton) {
-                    end.linkTo(parent.end)
-                    bottom.linkTo(settingsImage.bottom)
-                },
-            colorFilter = ColorFilter.tint(colors.primaryVariant)
         )
     }
 }

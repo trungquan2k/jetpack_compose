@@ -32,24 +32,21 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
-    private var _foodEntry = MutableLiveData(FoodModel())
-    val foodEntry: LiveData<FoodModel> = _foodEntry
 
-    val foods: LiveData<List<FoodDbModel>> by lazy {
-        repository.getRanDomFood()
-    }
-
-//    fun onClickRanDomFood(){
-//
-//        JetFoodRouter.navigateTo(Screen.Demo)
-//    }
     fun onClickRanDomFood(){
         viewModelScope.launch(Dispatchers.Default) {
             repository.getRanDomFood()
-
             withContext(Dispatchers.Main) {
                 JetFoodRouter.navigateTo(Screen.RanDomFood)
-                foodEntry.value
+            }
+        }
+    }
+
+    fun onClickBackHome(){
+        viewModelScope.launch(Dispatchers.Default) {
+            repository.getRanDomFood()
+            withContext(Dispatchers.Main) {
+                JetFoodRouter.navigateTo(Screen.Home)
             }
         }
     }
