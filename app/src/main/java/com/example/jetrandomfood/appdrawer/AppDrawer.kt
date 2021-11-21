@@ -1,7 +1,6 @@
 package com.example.jetrandomfood.appdrawer
 
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -15,11 +14,9 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -40,10 +37,9 @@ import com.example.jetrandomfood.routing.Screen
 
 import com.example.jetrandomfood.viewmodel.MainViewModel
 
-
 @ExperimentalMaterialApi
 @Composable
-fun HomePageScreen(viewModel: MainViewModel) {
+fun HomePageScreen(viewModel: MainViewModel){
     val scope = rememberCoroutineScope()
     val scaffoldState: ScaffoldState = rememberScaffoldState()
 
@@ -62,14 +58,18 @@ fun HomePageScreen(viewModel: MainViewModel) {
         topBar = {
             TopAppBar(scaffoldState = scaffoldState, scope = scope)
         },
-        content = {
-            // check if the random button has been pressed. If clicked,
-            // then set state to false otherwise true and display the list after random
-            if (!checkClick.value) {
-                ListFoodsItem()
-            } else {
-                ListRanDomFoods()
-            }
+        bottomBar = {
+            BottomAppBar(cutoutShape = fabShape, backgroundColor = Color(0xFDCD7F32)) {}
+        },
+        drawerContent = {
+            AppDrawer(
+                currentScreen = Screen.Home,
+                closeDrawerAction = {
+                    scope.launch {
+                        scaffoldState.drawerState.close()
+                    }
+                }
+            )
         },
         isFloatingActionButtonDocked = true,
         floatingActionButtonPosition = FabPosition.Center,
@@ -115,22 +115,20 @@ fun HomePageScreen(viewModel: MainViewModel) {
             }
 
         },
-        drawerContent = {
-            AppDrawer(
-                currentScreen = Screen.Home,
-                closeDrawerAction = {
-                    scope.launch {
-                        scaffoldState.drawerState.close()
-                    }
-                }
-            )
-        },
-        bottomBar = {
-            BottomAppBar(cutoutShape = fabShape, backgroundColor = Color(0xFDCD7F32)) {}
-
-        },
-    )
+    ) { innerPadding ->
+        // Apply the padding globally to the whole BottomNavScreensController
+        Box(modifier = Modifier.padding(innerPadding)) {
+            // check if the random button has been pressed. If clicked,
+            // then set state to false otherwise true and display the list after random
+            if (!checkClick.value) {
+                ListFoodsItem()
+            } else {
+                ListRanDomFoods()
+            }
+        }
+    }
 }
+
 
 
 @Composable

@@ -24,20 +24,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedObjectState)
         setContent {
             JetrandomfoodTheme() {
-//                MainActivityScreen(viewModel = viewModel)
                 HomePageScreen(viewModel)
             }
         }
     }
 }
-
-//@Composable
-//@ExperimentalMaterialApi
-//private fun MainActivityScreen(viewModel: MainViewModel){
-//    Surface{
-//        when(JetFoodRouter.currentScreen){
-//            is Screen.RanDomFood -> ListRanDomFood(viewModel)
-//            is Screen.Home -> HomePageScreen(viewModel)
-//        }
-//    }
-//}
